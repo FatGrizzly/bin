@@ -1,9 +1,9 @@
 name: Build & Release certwarden-deploy
 
 on:
-  workflow_dispatch:   # run manually
+  workflow_dispatch:        # Manual trigger
   schedule:
-    - cron: '0 0 * * *'   # optional: check daily for new tag
+    - cron: '0 0 * * *'     # Optional: check daily
 
 jobs:
   release:
@@ -14,25 +14,26 @@ jobs:
       run: |
         git clone https://gitlab.lila.network/lila-network/certwarden-deploy.git
         cd certwarden-deploy
-        git fetch --tags
+        git fetch --all --tags
 
-    - name: Get latest tag
+    - name: Get latest tag or commit
       id: get_tag
       run: |
         cd certwarden-deploy
-        TAG=$(git describe --tags --abbrev=0)
+        TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
+        echo "Using version: $TAG"
         echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-    - name: Build binary
+    - name: Build with Makefile
       run: |
         cd certwarden-deploy
-        go build -ldflags "-X main.Version=${{ steps.get_tag.outputs.tag }}" -o certwarden-deploy ./...
+        make build
 
     - name: Create GitHub release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.get_tag.outputs.tag }}
         name: certwarden-deploy ${{ steps.get_tag.outputs.tag }}
-        files: certwarden-deploy/certwarden-deploy
+        files: certwarden-deploy/bin/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
