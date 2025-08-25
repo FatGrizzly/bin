@@ -1,12 +1,12 @@
-name: Build & Release certwarden-deploy
+name: Build & Publish Binary to Pages
 
 on:
-  workflow_dispatch:        # Manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'     # Optional: check daily
+    - cron: '0 0 * * *'
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,12 +28,12 @@ jobs:
       run: |
         cd certwarden-deploy
         make build
+        mkdir -p ../public
+        cp bin/* ../public/certwarden-deploy
 
-    - name: Create GitHub release
-      uses: softprops/action-gh-release@v2
+    - name: Upload to GitHub Pages branch
+      uses: peaceiris/actions-gh-pages@v4
       with:
-        tag_name: ${{ steps.get_tag.outputs.tag }}
-        name: certwarden-deploy ${{ steps.get_tag.outputs.tag }}
-        files: certwarden-deploy/bin/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        publish_branch: gh-pages
