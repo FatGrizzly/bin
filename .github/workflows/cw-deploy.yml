@@ -12,7 +12,7 @@ jobs:
     steps:
     - name: Clone certwarden-deploy from GitLab
       run: |
-        git clone https://gitlab.lila.network/lila-network/certwarden-deploy.git
+        git clone https://code.lila.network/lila-network/certwarden-deploy.git
         cd certwarden-deploy
         git fetch --all --tags
 
